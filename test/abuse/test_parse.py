@@ -33,3 +33,10 @@ def test_can_read_non_terminals_on_right(context):
     parse("$SENTENCE -> You smell of $SMELL", rule_set)
     parse("$SENTENCE -> Your $BODYPART looks funny", rule_set)
     parse("$SENTENCE -> You're as $ADJ as a $ANIMAL", rule_set)
+
+@funk.with_context
+def test_non_terminals_are_alphanumeric_and_underscores_only(context):
+    rule_set = context.mock(RuleSet)
+    expects(rule_set).add(NonTerminal("SENTENCE"), "You smell of ", NonTerminal("Smell2"), ".")
+    
+    parse("$SENTENCE -> You smell of $Smell2.", rule_set)
