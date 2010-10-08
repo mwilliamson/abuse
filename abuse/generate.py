@@ -71,6 +71,6 @@ def generate(rule_set, selector):
     while unexpanded_nodes:
         unexpanded_node = unexpanded_nodes.pop()
         result.append(unexpanded_node.value())
-        unexpanded_nodes += unexpanded_node.expand(rule_set, selector)[::-1]
+        unexpanded_nodes += reversed(unexpanded_node.expand(rule_set, selector))
     
     return ''.join(result)
