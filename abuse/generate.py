@@ -43,8 +43,6 @@ class RuleSet(object):
         return map(to_node, result)
 
 class NonTerminalNode(object):
-    is_terminal = False
-    
     def __init__(self, non_terminal):
         self._non_terminal = non_terminal
         
@@ -55,8 +53,6 @@ class NonTerminalNode(object):
         return ""
     
 class TerminalNode(object):
-    is_terminal = True
-    
     def __init__(self, terminal):
         self._terminal = terminal
         
