@@ -22,3 +22,14 @@ def test_can_read_multiple_rules_separated_by_newlines(context):
     expects(rule_set).add(NonTerminal("SENTENCE"), "You smell!")
     
     parse("$SENTENCE -> I hate you!\n$SENTENCE -> You smell!", rule_set)
+
+@funk.with_context
+def test_can_read_non_terminals_on_right(context):
+    rule_set = context.mock(RuleSet)
+    expects(rule_set).add(NonTerminal("SENTENCE"), "You smell of ", NonTerminal("SMELL"))
+    expects(rule_set).add(NonTerminal("SENTENCE"), "Your ", NonTerminal("BODYPART"), " looks funny")
+    expects(rule_set).add(NonTerminal("SENTENCE"), "You're as ", NonTerminal("ADJ"), " as a ", NonTerminal("ANIMAL"))
+    
+    parse("$SENTENCE -> You smell of $SMELL", rule_set)
+    parse("$SENTENCE -> Your $BODYPART looks funny", rule_set)
+    parse("$SENTENCE -> You're as $ADJ as a $ANIMAL", rule_set)

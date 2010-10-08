@@ -6,10 +6,12 @@ class NonTerminal(object):
         return hash(self._name)
         
     def __eq__(self, other):
+        if not isinstance(other, NonTerminal):
+            return False
         return self._name == other._name
         
     def __ne__(self, other):
-        return self._name != other._name
+        return not (self == other)
         
     def __str__(self):
         return "<Non-terminal: %s>" % self._name
