@@ -35,12 +35,17 @@ class RuleSet(object):
         rules = self._rules[left]
         index = selector.select(0, len(rules))
         result = rules[index]
-        def to_node(value):
-            if isinstance(value, basestring):
-                return TerminalNode(value)
-            else:
-                return NonTerminalNode(value)
-        return map(to_node, result)
+        return map(self._to_node, result)
+        
+    def expand_all(self, left):
+        rules = self._rules[left]
+        return [map(self._to_node, rule) for rule in rules]
+    
+    def _to_node(self, value):
+        if isinstance(value, basestring):
+            return TerminalNode(value)
+        else:
+            return NonTerminalNode(value)
 
 class NonTerminalNode(object):
     def __init__(self, non_terminal):
@@ -48,6 +53,9 @@ class NonTerminalNode(object):
         
     def expand(self, rule_set, selector):
         return rule_set.expand(self._non_terminal, selector)
+        
+    def expand_all(self, rule_set):
+        return rule_set.expand_all(self._non_terminal)
     
     def value(self):
         return ""
@@ -57,6 +65,9 @@ class TerminalNode(object):
         self._terminal = terminal
         
     def expand(self, rule_set, selector):
+        return []
+        
+    def expand_all(self, rule_set):
         return []
         
     def value(self):
@@ -72,3 +83,36 @@ def generate(rule_set, selector):
         unexpanded_nodes += reversed(unexpanded_node.expand(rule_set, selector))
     
     return ''.join(result)
+
+def generate_all(rule_set):
+    sentence_node = NonTerminalNode(sentence)
+    all_unused_rules = [[[sentence_node]]]
+    current_result = [""]
+    all_results = []
+    unexpanded_nodes = []
+    unexpanded_node_history = [[]]
+    while all_unused_rules:
+        unused_rules = all_unused_rules[-1]
+        if unused_rules:
+            unused_rule = unused_rules.pop()
+            first_node = unused_rule[0]
+            all_unused_rules.append(first_node.expand_all(rule_set)[::-1])
+            unexpanded_node_history.append(unexpanded_nodes[:])
+            unexpanded_nodes += reversed(unused_rule[1:])
+            current_result.append(first_node.value())
+            added_node = True
+        elif unexpanded_nodes and added_node:
+            unexpanded_node = unexpanded_nodes.pop()
+            current_result.append(unexpanded_node.value())
+            all_unused_rules.append(unexpanded_node.expand_all(rule_set)[::-1])
+            unexpanded_node_history.append(unexpanded_nodes[:])
+            added_node = True
+        else:
+            if added_node:
+                all_results.append(''.join(current_result))
+            current_result.pop()
+            all_unused_rules.pop()
+            unexpanded_nodes = unexpanded_node_history.pop()
+            added_node = False
+            
+    return all_results
