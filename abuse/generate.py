@@ -59,6 +59,12 @@ class NonTerminalNode(object):
     
     def value(self):
         return ""
+        
+    def __str__(self):
+        return "<Non-terminal node: %s>" % self._non_terminal
+        
+    def __repr__(self):
+        return str(self)
     
 class TerminalNode(object):
     def __init__(self, terminal):
@@ -72,6 +78,12 @@ class TerminalNode(object):
         
     def value(self):
         return self._terminal
+        
+    def __str__(self):
+        return "<Terminal node: %s>" % self._terminal
+        
+    def __repr__(self):
+        return str(self)
     
 def generate(rule_set, selector):
     sentence_node = NonTerminalNode(sentence)
@@ -84,7 +96,25 @@ def generate(rule_set, selector):
     
     return ''.join(result)
 
-def generate_all(rule_set):
+def generate_all(rule_set, current_result=None, unexpanded_nodes=None):
+    if current_result is None:
+        current_result = []
+    if unexpanded_nodes is None:
+        unexpanded_nodes = [NonTerminalNode(sentence)]
+    
+    if unexpanded_nodes:
+        unexpanded_node = unexpanded_nodes.pop()
+        current_result.append(unexpanded_node.value())
+        rules = unexpanded_node.expand_all(rule_set)
+        if rules:
+            unflattened_results = (generate_all(rule_set, current_result[:], unexpanded_nodes + rule[::-1]) for rule in rules)
+            return [result for result_set in unflattened_results for result in result_set]
+        else:
+            return generate_all(rule_set, current_result[:], unexpanded_nodes)
+    else:
+        return [''.join(current_result)]
+
+def generate_allx(rule_set):
     sentence_node = NonTerminalNode(sentence)
     all_unused_rules = [[[sentence_node]]]
     current_result = [""]
