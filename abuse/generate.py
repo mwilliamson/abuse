@@ -114,7 +114,7 @@ def generate_all(rule_set, current_result=None, unexpanded_nodes=None):
     else:
         return [''.join(current_result)]
 
-def generate_allx(rule_set):
+def generate_all_iterative(rule_set):
     sentence_node = NonTerminalNode(sentence)
     all_unused_rules = [[[sentence_node]]]
     current_result = [""]
