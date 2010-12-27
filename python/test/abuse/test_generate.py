@@ -42,6 +42,13 @@ def test_resorts_to_picking_sentence_randomly_from_all_sentences_if_maximum_dept
     
     assert_equals("A A B", generate(rule_set, StaticSelector(1, 1, 1, 2), 3));
 
+def test_resorts_to_picking_sentence_randomly_from_all_sentences_if_non_terminal_cannot_be_expanded():
+    rule_set = RuleSet()
+    rule_set.add(sentence, NonTerminal("RUDE_WORD"))
+    rule_set.add(sentence, "Go away!")
+    
+    assert_equals("Go away!", generate(rule_set, StaticSelector(0, 0)));
+    
 def test_can_generate_all_sentences():
     rule_set = RuleSet()
     rule_set.add(sentence, "I hate you!")

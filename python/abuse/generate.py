@@ -32,6 +32,8 @@ class RuleSet(object):
             self._rules[left].append(result)
             
     def expand(self, left, selector):
+        if left not in self._rules:
+            return None
         rules = self._rules[left]
         index = selector.select(0, len(rules))
         result = rules[index]
@@ -90,15 +92,22 @@ def generate(rule_set, selector, max_depth=float("inf")):
     unexpanded_nodes = [sentence_node]
     result = []
     depth = -1
+    
+    def generate_from_all_sentences():
+        all_sentences = generate_all(rule_set, max_depth)
+        return all_sentences[selector.select(0, len(all_sentences))]
+    
     while unexpanded_nodes:
         if depth > max_depth:
-            all_sentences = generate_all(rule_set, max_depth)
-            return all_sentences[selector.select(0, len(all_sentences))]
+            return generate_from_all_sentences()
         depth += 1
         unexpanded_node = unexpanded_nodes.pop()
         result.append(unexpanded_node.value())
         if unexpanded_node.expandable:
-            unexpanded_nodes += reversed(unexpanded_node.expand(rule_set, selector))
+            new_nodes = unexpanded_node.expand(rule_set, selector)
+            if new_nodes is None:
+                return generate_from_all_sentences()
+            unexpanded_nodes += reversed(new_nodes)
     
     return ''.join(result)
 
