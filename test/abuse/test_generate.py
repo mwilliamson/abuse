@@ -34,7 +34,14 @@ def test_can_use_intermediate_rules():
     
     assert_equals("You smell of elderberries", generate(rule_set, StaticSelector(0, 0)))
     assert_equals("You smell of dogfood", generate(rule_set, StaticSelector(0, 1)))
+
+def test_resorts_to_picking_sentence_randomly_from_all_sentences_if_maximum_depth_is_reached():
+    rule_set = RuleSet()
+    rule_set.add(sentence, "B")
+    rule_set.add(sentence, "A ", sentence)
     
+    assert_equals("A A B", generate(rule_set, StaticSelector(1, 1, 1, 2), 3));
+
 def test_can_generate_all_sentences():
     rule_set = RuleSet()
     rule_set.add(sentence, "I hate you!")
@@ -54,3 +61,10 @@ def test_can_generate_all_sentences():
                    "You're as ugly as my rat", "You're as ugly as my dog",
                    "You're as stupid as my rat", "You're as stupid as my dog"], generate_all(rule_set))
 
+def test_can_generate_all_sentences_up_to_maximum_depth():
+    rule_set = RuleSet()
+    rule_set.add(sentence, "B")
+    rule_set.add(sentence, "A ", sentence)
+    
+    assert_equals(["B", "A B", "A A B"], generate_all(rule_set, 3))
+    

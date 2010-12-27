@@ -85,34 +85,39 @@ class TerminalNode(object):
     def __repr__(self):
         return str(self)
     
-def generate(rule_set, selector):
+def generate(rule_set, selector, max_depth=float("inf")):
     sentence_node = NonTerminalNode(sentence)
     unexpanded_nodes = [sentence_node]
     result = []
+    depth = -1
     while unexpanded_nodes:
+        if depth > max_depth:
+            all_sentences = generate_all(rule_set, max_depth)
+            return all_sentences[selector.select(0, len(all_sentences))]
+        depth += 1
         unexpanded_node = unexpanded_nodes.pop()
         result.append(unexpanded_node.value())
         unexpanded_nodes += reversed(unexpanded_node.expand(rule_set, selector))
     
     return ''.join(result)
 
-def generate_all(rule_set, current_result=None, unexpanded_nodes=None):
-    if current_result is None:
-        current_result = []
-    if unexpanded_nodes is None:
-        unexpanded_nodes = [NonTerminalNode(sentence)]
-    
+def _generate_all_recursive(rule_set, current_result, unexpanded_nodes, max_depth):
+    if max_depth == -1:
+        return []
     if unexpanded_nodes:
         unexpanded_node = unexpanded_nodes.pop()
         current_result.append(unexpanded_node.value())
         rules = unexpanded_node.expand_all(rule_set)
         if rules:
-            unflattened_results = (generate_all(rule_set, current_result[:], unexpanded_nodes + rule[::-1]) for rule in rules)
+            unflattened_results = (_generate_all_recursive(rule_set, current_result[:], unexpanded_nodes + rule[::-1], max_depth - 1) for rule in rules)
             return [result for result_set in unflattened_results for result in result_set]
         else:
-            return generate_all(rule_set, current_result[:], unexpanded_nodes)
+            return _generate_all_recursive(rule_set, current_result[:], unexpanded_nodes, max_depth)
     else:
         return [''.join(current_result)]
+
+def generate_all(rule_set, max_depth=float("inf")):
+    return _generate_all_recursive(rule_set, [], [NonTerminalNode(sentence)], max_depth)
 
 def generate_all_iterative(rule_set):
     sentence_node = NonTerminalNode(sentence)
