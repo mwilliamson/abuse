@@ -68,3 +68,8 @@ def test_can_generate_all_sentences_up_to_maximum_depth():
     
     assert_equals(["B", "A B", "A A B"], generate_all(rule_set, 3))
     
+def test_empty_rule_set_generates_no_sentences():
+    rule_set = RuleSet()
+    
+    assert_equals([], generate_all(rule_set))
+    

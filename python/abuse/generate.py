@@ -38,6 +38,8 @@ class RuleSet(object):
         return map(self._to_node, result)
         
     def expand_all(self, left):
+        if left not in self._rules:
+            return []
         rules = self._rules[left]
         return [map(self._to_node, rule) for rule in rules]
     
@@ -48,6 +50,8 @@ class RuleSet(object):
             return NonTerminalNode(value)
 
 class NonTerminalNode(object):
+    expandable = True
+    
     def __init__(self, non_terminal):
         self._non_terminal = non_terminal
         
@@ -67,14 +71,10 @@ class NonTerminalNode(object):
         return str(self)
     
 class TerminalNode(object):
+    expandable = False
+    
     def __init__(self, terminal):
         self._terminal = terminal
-        
-    def expand(self, rule_set, selector):
-        return []
-        
-    def expand_all(self, rule_set):
-        return []
         
     def value(self):
         return self._terminal
@@ -97,7 +97,8 @@ def generate(rule_set, selector, max_depth=float("inf")):
         depth += 1
         unexpanded_node = unexpanded_nodes.pop()
         result.append(unexpanded_node.value())
-        unexpanded_nodes += reversed(unexpanded_node.expand(rule_set, selector))
+        if unexpanded_node.expandable:
+            unexpanded_nodes += reversed(unexpanded_node.expand(rule_set, selector))
     
     return ''.join(result)
 
@@ -107,47 +108,16 @@ def _generate_all_recursive(rule_set, current_result, unexpanded_nodes, max_dept
     if unexpanded_nodes:
         unexpanded_node = unexpanded_nodes.pop()
         current_result.append(unexpanded_node.value())
+        if not unexpanded_node.expandable:
+            return _generate_all_recursive(rule_set, current_result[:], unexpanded_nodes, max_depth)
         rules = unexpanded_node.expand_all(rule_set)
         if rules:
             unflattened_results = (_generate_all_recursive(rule_set, current_result[:], unexpanded_nodes + rule[::-1], max_depth - 1) for rule in rules)
             return [result for result_set in unflattened_results for result in result_set]
         else:
-            return _generate_all_recursive(rule_set, current_result[:], unexpanded_nodes, max_depth)
+            return []
     else:
         return [''.join(current_result)]
 
 def generate_all(rule_set, max_depth=float("inf")):
     return _generate_all_recursive(rule_set, [], [NonTerminalNode(sentence)], max_depth)
-
-def generate_all_iterative(rule_set):
-    sentence_node = NonTerminalNode(sentence)
-    all_unused_rules = [[[sentence_node]]]
-    current_result = [""]
-    all_results = []
-    unexpanded_nodes = []
-    unexpanded_node_history = [[]]
-    while all_unused_rules:
-        unused_rules = all_unused_rules[-1]
-        if unused_rules:
-            unused_rule = unused_rules.pop()
-            first_node = unused_rule[0]
-            all_unused_rules.append(first_node.expand_all(rule_set)[::-1])
-            unexpanded_node_history.append(unexpanded_nodes[:])
-            unexpanded_nodes += reversed(unused_rule[1:])
-            current_result.append(first_node.value())
-            added_node = True
-        elif unexpanded_nodes and added_node:
-            unexpanded_node = unexpanded_nodes.pop()
-            current_result.append(unexpanded_node.value())
-            all_unused_rules.append(unexpanded_node.expand_all(rule_set)[::-1])
-            unexpanded_node_history.append(unexpanded_nodes[:])
-            added_node = True
-        else:
-            if added_node:
-                all_results.append(''.join(current_result))
-            current_result.pop()
-            all_unused_rules.pop()
-            unexpanded_nodes = unexpanded_node_history.pop()
-            added_node = False
-            
-    return all_results
