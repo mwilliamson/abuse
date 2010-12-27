@@ -24,6 +24,13 @@ def test_can_read_multiple_rules_separated_by_newlines(context):
     parse("$SENTENCE -> I hate you!\n$SENTENCE -> You smell!", rule_set)
 
 @funk.with_context
+def test_whitespace_is_trimmed_from_right(context):
+    rule_set = context.mock(RuleSet)
+    expects(rule_set).add(NonTerminal("SENTENCE"), "I hate you!")
+
+    parse("$SENTENCE -> I hate you!    \t\t", rule_set)
+    
+@funk.with_context
 def test_can_read_non_terminals_on_right(context):
     rule_set = context.mock(RuleSet)
     expects(rule_set).add(NonTerminal("SENTENCE"), "You smell of ", NonTerminal("SMELL"))

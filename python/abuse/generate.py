@@ -120,7 +120,7 @@ def _generate_all_recursive(rule_set, current_result, unexpanded_nodes, max_dept
         if not unexpanded_node.expandable:
             return _generate_all_recursive(rule_set, current_result[:], unexpanded_nodes, max_depth)
         rules = unexpanded_node.expand_all(rule_set)
-        if rules:
+        if rules is not None:
             unflattened_results = (_generate_all_recursive(rule_set, current_result[:], unexpanded_nodes + rule[::-1], max_depth - 1) for rule in rules)
             return [result for result_set in unflattened_results for result in result_set]
         else:
