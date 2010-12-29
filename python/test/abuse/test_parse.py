@@ -58,3 +58,11 @@ def test_non_terminals_are_alphanumeric_and_underscores_only(context):
     expects(rule_set).add(NonTerminal("SENTENCE"), "You smell of ", NonTerminal("Smell2"), ".")
     
     parse("$SENTENCE -> You smell of $Smell2.", rule_set)
+
+@funk.with_context
+def test_can_use_braces_to_indicate_non_terminals(context):
+    rule_set = context.mock(RuleSet)
+    expects(rule_set).add(NonTerminal("SENTENCE"), "You're ", NonTerminal("RUDE_ADJ"), "er than I thought")
+    
+    parse("$SENTENCE -> You're ${RUDE_ADJ}er than I thought", rule_set)
+    
