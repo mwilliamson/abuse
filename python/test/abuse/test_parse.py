@@ -5,7 +5,7 @@ from abuse.generate import RuleSet
 from abuse.generate import NonTerminal
 from abuse.parse import parse
 
-def test_ignores_blank_lines():
+def test_can_parse_source_with_only_whitespace():
     parse("\n\n\n\n\n\r\t\t \n\n     \r\n\n", None)
     
 @funk.with_context
@@ -29,16 +29,27 @@ def test_whitespace_is_trimmed_from_right(context):
     expects(rule_set).add(NonTerminal("SENTENCE"), "I hate you!")
 
     parse("$SENTENCE -> I hate you!    \t\t", rule_set)
-    
+
+@funk.with_context
+def test_final_terminal_is_only_trimmed_on_the_right(context):
+    rule_set = context.mock(RuleSet)
+    expects(rule_set).add(NonTerminal("VERY"), "", NonTerminal("VERY"), " very")
+
+    parse("$VERY -> $VERY very", rule_set)
+
+@funk.with_context
+def test_ignores_blank_lines(context):
+    rule_set = context.mock(RuleSet)
+    expects(rule_set).add(NonTerminal("SENTENCE"), "I hate you!")
+    expects(rule_set).add(NonTerminal("SENTENCE"), "You smell!")
+
+    parse("\n    \t\n\n$SENTENCE -> I hate you!\n     \n\n$SENTENCE -> You smell!\n\n\n", rule_set)
+
 @funk.with_context
 def test_can_read_non_terminals_on_right(context):
     rule_set = context.mock(RuleSet)
-    expects(rule_set).add(NonTerminal("SENTENCE"), "You smell of ", NonTerminal("SMELL"))
-    expects(rule_set).add(NonTerminal("SENTENCE"), "Your ", NonTerminal("BODYPART"), " looks funny")
     expects(rule_set).add(NonTerminal("SENTENCE"), "You're as ", NonTerminal("ADJ"), " as a ", NonTerminal("ANIMAL"))
     
-    parse("$SENTENCE -> You smell of $SMELL", rule_set)
-    parse("$SENTENCE -> Your $BODYPART looks funny", rule_set)
     parse("$SENTENCE -> You're as $ADJ as a $ANIMAL", rule_set)
 
 @funk.with_context
