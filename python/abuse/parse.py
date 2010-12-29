@@ -12,7 +12,9 @@ def parse_line(text, rule_set):
     index = 0
     while right.find("$", index) != -1:
         dollar_index = right.find("$", index)
-        result.append(right[index:dollar_index])
+        remainder = right[index:dollar_index]
+        if remainder:
+            result.append(remainder)
         
         if right[dollar_index + 1] == "{":
             closing_brace_index = right.find("}", dollar_index)

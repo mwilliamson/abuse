@@ -33,9 +33,16 @@ def test_whitespace_is_trimmed_from_right(context):
 @funk.with_context
 def test_final_terminal_is_only_trimmed_on_the_right(context):
     rule_set = context.mock(RuleSet)
-    expects(rule_set).add(NonTerminal("VERY"), "", NonTerminal("VERY"), " very")
+    expects(rule_set).add(NonTerminal("VERY"), NonTerminal("VERY"), " very")
 
     parse("$VERY -> $VERY very", rule_set)
+
+@funk.with_context
+def test_empty_terminals_are_not_produced_by_rules(context):
+    rule_set = context.mock(RuleSet)
+    expects(rule_set).add(NonTerminal("SENTENCE"), NonTerminal("INSULT"))
+    
+    parse("$SENTENCE -> $INSULT", rule_set)
 
 @funk.with_context
 def test_ignores_blank_lines(context):
