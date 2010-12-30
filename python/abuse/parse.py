@@ -1,5 +1,6 @@
 import re
 from abuse.generate import NonTerminal
+from abuse.generate import sentence
 
 _non_terminal_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_"
 _split_string = "->"
@@ -29,13 +30,15 @@ class MissingClosingBrace(object):
         return self.message
 
 class NoProductionRule(object):
-    def __init__(self, line_number, character_number, non_terminal):
+    def __init__(self, non_terminal, line_number=None, character_number=None):
         self.line_number = line_number
         self.character_number = character_number
         self.non_terminal = non_terminal
-        self.message = "No production rule for non-terminal $%s (line %s, character %s)" % \
-            (non_terminal, line_number, character_number)
-        
+        self.message = "No production rule for non-terminal $%s" % \
+            (non_terminal, )
+        if line_number is not None:
+            self.message +=  " (line %s, character %s)" % (line_number, character_number)
+            
     def __str__(self):
         return self.message
         
@@ -111,7 +114,10 @@ def find_orphaned_non_terminals(rules, errors):
     for rule in rules:
         start_names.append(rule.left.name)
     
+    if sentence.name not in start_names:
+        errors.append(NoProductionRule(sentence.name))
+    
     for rule in rules:
         for node in rule.right:
             if isinstance(node, NonTerminal) and node.name not in start_names:
-                errors.append(NoProductionRule(node.line_number, node.character_number, node.name))
+                errors.append(NoProductionRule(node.name, node.line_number, node.character_number))

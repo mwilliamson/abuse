@@ -138,3 +138,14 @@ def test_adds_error_if_non_terminal_is_used_with_no_matching_production_rule(con
         m.is_a(NoProductionRule)
     )))
     
+@funk.with_context
+def test_adds_error_if_sentence_has_no_production_rule(context):
+    errors = []
+    
+    parse("", RuleSet(), errors);
+    
+    assert_that(errors, m.contains_exactly(m.all_of(
+        m.has_attr(message="No production rule for non-terminal $SENTENCE",
+                   non_terminal="SENTENCE"),
+        m.is_a(NoProductionRule)
+    )))
