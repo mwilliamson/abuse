@@ -9,6 +9,7 @@ from abuse.generate import NonTerminal
 from abuse.parse import parse
 from abuse.parse import MissingArrow
 from abuse.parse import MissingClosingBrace
+from abuse.parse import NoProductionRule
 
 def test_can_parse_source_with_only_whitespace():
     parse("\n\n\n\n\n\r\t\t \n\n     \r\n\n", None, [])
@@ -97,13 +98,11 @@ def test_adds_error_with_line_number_if_arrow_is_missing(context):
 
 @funk.with_context
 def test_adds_error_with_line_number_if_closing_brace_is_missing(context):
-    rule_set = context.mock(RuleSet)
-    allows(rule_set).add
     errors = []
     
     parse("\n\n$SENTENCE -> You're ${RUDE_ADJer than I thought\n" +
           "$SENTENCE ->\n",
-          rule_set,
+          RuleSet(),
           errors)
     
     assert_that(errors, m.contains_exactly(m.all_of(
@@ -114,18 +113,28 @@ def test_adds_error_with_line_number_if_closing_brace_is_missing(context):
 
 @funk.with_context
 def test_adds_error_with_line_number_if_closing_brace_for_second_variable_is_missing(context):
-    rule_set = context.mock(RuleSet)
-    allows(rule_set).add
     errors = []
     
     parse("\n\n$SENTENCE -> You're ${RUDE_ADJ}er than ${OBJ\n" +
           "$SENTENCE ->\n\n",
-          rule_set,
+          RuleSet(),
           errors)
     
     assert_that(errors, m.contains_exactly(m.all_of(
         m.has_attr(message="Missing closing brace on line 3 (opening brace at character 41)",
                    line_number=3, opening_brace_character_number=41),
         m.is_a(MissingClosingBrace)
+    )))
+    
+@funk.with_context
+def test_adds_error_if_non_terminal_is_used_with_no_matching_production_rule(context):
+    errors = []
+    
+    parse("\n\n$SENTENCE -> $INSULT\n\n", RuleSet(), errors);
+    
+    assert_that(errors, m.contains_exactly(m.all_of(
+        m.has_attr(message="No production rule for non-terminal $INSULT (line 3, character 14)",
+                   line_number=3, character_number=14, non_terminal="INSULT"),
+        m.is_a(NoProductionRule)
     )))
     

@@ -1,20 +1,20 @@
 class NonTerminal(object):
     def __init__(self, name):
-        self._name = name
+        self.name = name
         
     def __hash__(self):
-        return hash(self._name)
+        return hash(self.name)
         
     def __eq__(self, other):
         if not isinstance(other, NonTerminal):
             return False
-        return self._name == other._name
+        return self.name == other.name
         
     def __ne__(self, other):
         return not (self == other)
         
     def __str__(self):
-        return "<Non-terminal: %s>" % self._name
+        return "<Non-terminal: %s>" % self.name
         
     def __repr__(self):
         return str(self)
