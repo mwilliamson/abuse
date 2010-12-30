@@ -45,6 +45,18 @@ class NoProductionRule(object):
     def __repr__(self):
         return self.message
 
+class RuleNeverUsed(object):
+    def __init__(self, non_terminal, line_number):
+        self.line_number = line_number
+        self.message = "Production rule with start symbol $%s is never used (line %s)" % \
+            (non_terminal, line_number)
+            
+    def __str__(self):
+        return self.message
+        
+    def __repr__(self):
+        return self.message
+
 class Rule(object):
     def __init__(self, left, right):
         self.left = left
@@ -103,16 +115,24 @@ def parse_line(line_number, text, rules, errors):
     remainder = right[index:].rstrip()
     if remainder:
         result.append(remainder)
-    rules.append(Rule(NonTerminal(left[1:].strip()), result))
+        
+    non_terminal = NonTerminal(left[1:].strip())
+    non_terminal.line_number = line_number
+    rules.append(Rule(non_terminal, result))
 
 def is_non_terminal_char(string, index):
     return string[index:index + 1] in _non_terminal_chars and len(string) > index
 
 def find_orphaned_non_terminals(rules, errors):
     start_names = []
+    non_terminal_names = []
     
     for rule in rules:
         start_names.append(rule.left.name)
+        for node in rule.right:
+            if isinstance(node, NonTerminal):
+                non_terminal_names.append(node.name)
+    non_terminal_names.append(sentence.name)
     
     if sentence.name not in start_names:
         errors.append(NoProductionRule(sentence.name))
@@ -121,3 +141,7 @@ def find_orphaned_non_terminals(rules, errors):
         for node in rule.right:
             if isinstance(node, NonTerminal) and node.name not in start_names:
                 errors.append(NoProductionRule(node.name, node.line_number, node.character_number))
+
+    for rule in rules:
+        if rule.left.name not in non_terminal_names:
+            errors.append(RuleNeverUsed(rule.left.name, rule.left.line_number))

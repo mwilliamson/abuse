@@ -10,6 +10,7 @@ from abuse.parse import parse
 from abuse.parse import MissingArrow
 from abuse.parse import MissingClosingBrace
 from abuse.parse import NoProductionRule
+from abuse.parse import RuleNeverUsed
 
 def test_can_parse_source_with_only_whitespace():
     parse("\n\n\n\n\n\r\t\t \n\n     \r\n\n", None, [])
@@ -148,4 +149,16 @@ def test_adds_error_if_sentence_has_no_production_rule(context):
         m.has_attr(message="No production rule for non-terminal $SENTENCE",
                    non_terminal="SENTENCE"),
         m.is_a(NoProductionRule)
+    )))
+
+@funk.with_context
+def test_adds_error_if_production_rule_is_never_used(context):
+    errors = []
+    
+    parse("$SENTENCE -> \n$RUDE_ADJ -> ugly", RuleSet(), errors);
+    
+    assert_that(errors, m.contains_exactly(m.all_of(
+        m.has_attr(message="Production rule with start symbol $RUDE_ADJ is never used (line 2)",
+                   line_number=2),
+        m.is_a(RuleNeverUsed)
     )))
