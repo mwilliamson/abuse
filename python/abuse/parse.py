@@ -1,13 +1,29 @@
 from abuse.generate import NonTerminal
 
 _non_terminal_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_"
+_split_string = "->"
 
-def parse(text, rule_set):
-    for line in filter(lambda l: l.strip(), text.split("\n")):
-        parse_line(line, rule_set)
+class MissingArrow(object):
+    def __init__(self, line_number):
+        self.message = "Missing symbol on line %s: %s" % (line_number, _split_string)
+        self.line_number = line_number
+    
+    def __str__(self):
+        return self.message
+        
+    def __repr__(self):
+        return self.message
 
-def parse_line(text, rule_set):
-    left, right = map(str.strip, text.split("->"))
+def parse(text, rule_set, errors):
+    for line_number, line in enumerate(text.split("\n")):
+        if len(line.strip()) > 0:
+            parse_line(line_number + 1, line, rule_set, errors)
+
+def parse_line(line_number, text, rule_set, errors):
+    if _split_string not in text:
+        errors.append(MissingArrow(line_number))
+        return
+    left, right = map(str.strip, text.split(_split_string))
     result = []
     index = 0
     while right.find("$", index) != -1:
