@@ -20,7 +20,7 @@ if "--all" in sys.argv:
 else:
     all_abuse = False
     
-parse(open(sys.argv[1]).read(), rule_set)
+parse(open(sys.argv[1]).read(), rule_set, [])
 if all_abuse:
     print "\n".join(generate_all(rule_set))
 else:
