@@ -159,6 +159,6 @@ def test_adds_error_if_production_rule_is_never_used(context):
     
     assert_that(errors, m.contains_exactly(m.all_of(
         m.has_attr(message="Production rule with start symbol $RUDE_ADJ is never used (line 2)",
-                   line_number=2),
+                   line_number=2, start="RUDE_ADJ"),
         m.is_a(RuleNeverUsed)
     )))

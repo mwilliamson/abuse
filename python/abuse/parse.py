@@ -48,6 +48,7 @@ class NoProductionRule(object):
 class RuleNeverUsed(object):
     def __init__(self, non_terminal, line_number):
         self.line_number = line_number
+        self.start = non_terminal
         self.message = "Production rule with start symbol $%s is never used (line %s)" % \
             (non_terminal, line_number)
             
