@@ -8,6 +8,7 @@ from abuse.generate import RuleSet
 from abuse.generate import NonTerminal
 from abuse.parse import parse
 from abuse.parse import MissingArrow
+from abuse.parse import MissingClosingBrace
 
 def test_can_parse_source_with_only_whitespace():
     parse("\n\n\n\n\n\r\t\t \n\n     \r\n\n", None, [])
@@ -93,3 +94,38 @@ def test_adds_error_with_line_number_if_arrow_is_missing(context):
         m.has_attr(message="Missing symbol on line 3: ->", line_number=3),
         m.is_a(MissingArrow)
     )))
+
+@funk.with_context
+def test_adds_error_with_line_number_if_closing_brace_is_missing(context):
+    rule_set = context.mock(RuleSet)
+    allows(rule_set).add
+    errors = []
+    
+    parse("\n\n$SENTENCE -> You're ${RUDE_ADJer than I thought\n" +
+          "$SENTENCE ->\n",
+          rule_set,
+          errors)
+    
+    assert_that(errors, m.contains_exactly(m.all_of(
+        m.has_attr(message="Missing closing brace on line 3 (opening brace at character 22)",
+                   line_number=3, opening_brace_character_number=22),
+        m.is_a(MissingClosingBrace)
+    )))
+
+@funk.with_context
+def test_adds_error_with_line_number_if_closing_brace_for_second_variable_is_missing(context):
+    rule_set = context.mock(RuleSet)
+    allows(rule_set).add
+    errors = []
+    
+    parse("\n\n$SENTENCE -> You're ${RUDE_ADJ}er than ${OBJ\n" +
+          "$SENTENCE ->\n\n",
+          rule_set,
+          errors)
+    
+    assert_that(errors, m.contains_exactly(m.all_of(
+        m.has_attr(message="Missing closing brace on line 3 (opening brace at character 41)",
+                   line_number=3, opening_brace_character_number=41),
+        m.is_a(MissingClosingBrace)
+    )))
+    
