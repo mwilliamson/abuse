@@ -40,5 +40,5 @@ You smell of dogfood
 You're as stupid as my dog
 You're as stupid as my rat
 You're as ugly as my dog
-You're as ugly as my rat</pre>
+You're as ugly as my rat
 ```
